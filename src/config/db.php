@@ -5,7 +5,7 @@ class db {
     // Properties
     private $dbhost = 'localhost';
     private $dbuser = 'root';
-    private $dbpass = '';
+    private $dbpass = 'archive';
     private $dbname = 'test';
 
     // Connect

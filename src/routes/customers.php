@@ -4,10 +4,25 @@ use \Psr\Http\Message\ResponseInterface as Response;
 
 $app = new \Slim\App;
 
+
+// Enable CORS
+$app->options('/{routes:.+}', function ($request, $response, $args) {
+    return $response;
+});
+
+$app->add(function ($req, $res, $next) {
+    $response = $next($req, $res);
+    return $response
+            ->withHeader('Access-Control-Allow-Origin', 'http://127.0.0.1:5500')
+            ->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization')
+            ->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+});
+
+
 // GET ALL CUSTOMERS
 
 $app->get('/api/customers', function( Request $request, Response $response) {
-    
+
     $sql = "SELECT * FROM employee_data";
 
     try {
@@ -24,14 +39,14 @@ $app->get('/api/customers', function( Request $request, Response $response) {
     } catch(PDOException $e) {
         echo "ERROR";
     }
-    
+
 
 });
 
 // GET Single CUSTOMERS
 
 $app->get('/api/customer/{id}', function( Request $request, Response $response) {
-    
+
     $id = $request->getAttribute('id');
     $sql = "SELECT * FROM employee_data WHERE serialNumber = $id";
 
@@ -51,14 +66,14 @@ $app->get('/api/customer/{id}', function( Request $request, Response $response) 
     } catch(PDOException $e) {
         echo "ERROR";
     }
-    
+
 
 });
 
 // ADD CUSTOMERS
 
 $app->post('/api/customer/add', function( Request $request, Response $response) {
-    
+
     $name = $request->getParam('name');
     $email = $request->getParam('email');
     $city = $request->getParam('city');
@@ -87,7 +102,7 @@ $app->post('/api/customer/add', function( Request $request, Response $response) 
     } catch(PDOException $e) {
         echo "ERROR";
     }
-    
+
 
 });
 
@@ -96,19 +111,19 @@ $app->post('/api/customer/add', function( Request $request, Response $response) 
 $app->put('/api/customer/update/{id}', function( Request $request, Response $response) {
 
     $id = $request->getAttribute('id');
-    
+
     $name = $request->getParam('name');
     $email = $request->getParam('email');
     $city = $request->getParam('city');
     $state = $request->getParam('state');
     $amount = $request->getParam('amount');
 
-    $sql = "UPDATE employee_data SET 
-                name    = :name, 
-                email   = :email, 
-                city    = :city, 
-                state   = :state, 
-                amount  = :amount 
+    $sql = "UPDATE employee_data SET
+                name    = :name,
+                email   = :email,
+                city    = :city,
+                state   = :state,
+                amount  = :amount
             WHERE serialNumber = $id";
 
     try {
@@ -131,14 +146,14 @@ $app->put('/api/customer/update/{id}', function( Request $request, Response $res
     } catch(PDOException $e) {
         echo '{"error": {"text": '.$e->getMessage().'}';
     }
-    
+
 
 });
 
 // DELETE CUSTOMERS
 
 $app->delete('/api/customer/delete/{id}', function( Request $request, Response $response) {
-    
+
     $id = $request->getAttribute('id');
     $sql = "DELETE FROM employee_data WHERE serialNumber = $id";
 
@@ -157,6 +172,11 @@ $app->delete('/api/customer/delete/{id}', function( Request $request, Response $
     } catch(PDOException $e) {
         echo "ERROR";
     }
-    
 
+
+});
+
+$app->map(['GET', 'POST', 'PUT', 'DELETE', 'PATCH'], '/{routes:.+}', function($req, $res) {
+    $handler = $this->notFoundHandler; // handle using the default Slim page not found handler
+    return $handler($req, $res);
 });
